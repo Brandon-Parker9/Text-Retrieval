@@ -15,7 +15,6 @@ This project implements a Text Retrieval System that performs various preprocess
 
     ```bash
     git clone https://github.com/your-username/text-retrieval-system.git
-    cd text-retrieval-system
     ```
 
 2. Install the required dependencies:
@@ -27,7 +26,7 @@ This project implements a Text Retrieval System that performs various preprocess
 3. Run the system:
 
     ```bash
-    python main.py
+    py main.py
     ```
 
 ## Project Structure
