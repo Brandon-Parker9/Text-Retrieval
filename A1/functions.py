@@ -94,6 +94,33 @@ def normalize_and_tokenize(text):
 
     return text_tokenized
 
+def user_input():
+
+    while True:
+        # Ask the user to input the number of queries
+        num_queries_input = input("Enter the number of queries you would like to preform: ")
+
+        # Check if the input is a non-empty string and consists only of digits
+        if num_queries_input.isdigit():
+            # Convert the input to an integer and break out of the loop
+            num_queries = int(num_queries_input)
+            break
+        else:
+            # If the input is not a valid number, display an error message and continue the loop
+            print("Invalid input. Please enter a valid number.")
+
+    input_sentence = input("Input sentence: ")
+    input_operation_sequence = input("Input operation Sequence: ")
+
+    print(f"Number input: {num_queries} \n Input sentence: {input_sentence} \n Input Operation Sequence: {input_operation_sequence}")
+
+    return True
+
+def run_query(words, operators):
+
+
+
+    return True
 
 def read_file(file_path):
 
@@ -133,14 +160,14 @@ def write_dictionary_to_file(dictionary):
             # Write each key-value pair to the file with a newline character
             f.write(f"{key}:{value}\n")
 
-
 def print_dictionary(dictionary):
+
     # Print the opening curly brace for the dictionary
     print("{")
     
     # Iterate through key-value pairs in the dictionary
     for key, value in dictionary.items():
-        
+
         # Print each key-value pair with proper indentation
         print(f"    '{key}': {value},")
     
