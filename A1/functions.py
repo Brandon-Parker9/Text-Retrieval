@@ -5,8 +5,8 @@ from nltk.tokenize import word_tokenize
 import nltk
 
 # Download necessary NLTK resources
-nltk.download('punkt')
-nltk.download('stopwords')
+nltk.download('punkt', quiet=True)
+nltk.download('stopwords', quiet=True)
 
 def create_inverted_index_from_files(folder_path):
 
@@ -41,6 +41,7 @@ def create_inverted_index_from_files(folder_path):
             # Read the contents of the file and convert to lowercase
             file_contents = read_file(folder_path + "/" + list_of_files[i])
             
+            # Check if file was able to be opened
             if file_contents != None:
     
                 word_tokens = normalize_and_tokenize(file_contents)
@@ -64,6 +65,8 @@ def create_inverted_index_from_files(folder_path):
                     inverted_index[word].append(i)
                         
                 # print(set_of_words)
+            
+            # If the file coudl not be opened, add it to a list
             else:
                 files_unable_to_open.append(list_of_files[i])
 
