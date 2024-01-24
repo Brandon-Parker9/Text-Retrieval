@@ -11,7 +11,7 @@ nltk.download('stopwords')
 def create_inverted_index_from_files(folder_path):
     # Initialize an empty inverted index dictionary
     inverted_index = {}
-    
+
     # Initialize a set to store unique words across all files
     set_of_words = set()
 
@@ -23,8 +23,8 @@ def create_inverted_index_from_files(folder_path):
 
     # Iterate through each file in the folder
     for file in files:
-        # Initialize variables to store normalized file contents and word tokens
-        normalized_file_contents = ""
+
+        # Initialize variables to store word tokens
         word_tokens = []
 
         # Get the file extension
@@ -35,24 +35,37 @@ def create_inverted_index_from_files(folder_path):
             # Read the contents of the file and convert to lowercase
             file_contents = read_file(folder_path + "/" + file).lower()
 
-            # Normalize the file contents by keeping only alphanumeric characters and spaces
-            for character in file_contents:
-                if character.isalnum() or character == " ":
-                    normalized_file_contents += character
+            word_tokens = normalize_and_tokenize(file_contents)
 
-            # Tokenize the normalized file contents into words
-            word_tokens = word_tokenize(normalized_file_contents)
+            # print(word_tokens)
 
             # Iterate through each word token
             for word in word_tokens:
-                # Check if the word is not a stopword and has a non-zero length
-                if word not in stop_words and len(word) != 0:
+                # Check if the word is not a stopword and has a length greater than 1
+                if word not in stop_words and len(word) > 1:
                     # Add the word to the set of unique words
                     set_of_words.add(word)
+
+            # print(set_of_words)
+            
 
     # Return the populated inverted index (for now, it's an empty dictionary)
     return inverted_index
 
+# Function to keeping only alphanumeric characters and spaces and return a tokenized list of the words
+def normalize_and_tokenize(text):
+
+    normalized_text = ""
+
+    # Normalize the file contents by keeping only alphanumeric characters and spaces
+    for character in text:
+        if character.isalnum() or character == " ":
+            normalized_text += character
+
+    # Tokenize the normalized file contents into words
+    text_tokenized = word_tokenize(normalized_text)
+
+    return text_tokenized
 
 
 def read_file(file_path):
