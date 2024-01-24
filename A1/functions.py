@@ -123,12 +123,26 @@ def read_file(file_path):
         return None
 
 def write_dictionary_to_file(dictionary):
-    with open("dictionary.txt", 'w', encoding="utf-8") as f:  
-        for key, value in dictionary.items():  
+
+    # Open a file named "dictionary.txt" in write mode ('w') with UTF-8 encoding
+    with open("dictionary.txt", 'w', encoding="utf-8") as f:
+
+        # Iterate through key-value pairs in the dictionary
+        for key, value in dictionary.items():
+
+            # Write each key-value pair to the file with a newline character
             f.write(f"{key}:{value}\n")
 
+
 def print_dictionary(dictionary):
+    # Print the opening curly brace for the dictionary
     print("{")
+    
+    # Iterate through key-value pairs in the dictionary
     for key, value in dictionary.items():
+        
+        # Print each key-value pair with proper indentation
         print(f"    '{key}': {value},")
+    
+    # Print the closing curly brace for the dictionary
     print("}")
