@@ -41,3 +41,5 @@ print("Union of", list1, "OR", list2, "is", result, "\n")
 result, _ = intersection(list1, list2)
 print("Intersection of", list1, "AND", list2, "is", result, "\n")
 
+print("UNION DOES NOT INSERT IN SORTED ORDER!!!!!!!!  Must fix lolol\n")
+
