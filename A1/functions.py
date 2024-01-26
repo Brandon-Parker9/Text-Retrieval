@@ -10,9 +10,11 @@ nltk.download('stopwords', quiet=True)
 
 def create_inverted_index_from_files(folder_path):
 
+    # List of file names that were unable to be opened
     files_unable_to_open = []
 
-    all_document_ids = []
+    # Dictionary of the document ids and their file namesd
+    all_document_ids_and_names = {}
 
     # Initialize an empty inverted index dictionary
     inverted_index = {}
@@ -38,11 +40,11 @@ def create_inverted_index_from_files(folder_path):
         # Get the file extension
         _, extension = os.path.splitext(list_of_files[i])
 
-        # Add document id to list of all document ids
-        all_document_ids.append(i)
-
         # Check if the file has a .txt extension
         if extension == ".txt":
+
+            # Add document id and name to the dictionary
+            all_document_ids_and_names[i] = list_of_files[i]
 
             # Read the contents of the file and convert to lowercase
             file_contents = read_file(folder_path + "/" + list_of_files[i])
@@ -75,7 +77,7 @@ def create_inverted_index_from_files(folder_path):
     write_dictionary_to_file(inverted_index)      
 
 
-    return list_of_files, inverted_index, all_document_ids
+    return inverted_index, all_document_ids_and_names
 
 def normalize_and_tokenize(text):
     # Function to keeping only alphanumeric characters and spaces and return a tokenized list of the words
@@ -155,8 +157,8 @@ def user_input():
 
 def run_query(words, operators, invereted_index, all_document_ids):
     
-    document_list = []  # List to store the documents that match the query
-    num_of_operators = len(operators)
+    document_ids = []  # List to store the document ids that match the query
+    num_of_operators = len(operators) - 1
     total_number_of_comparisons = 0
 
     # Iterate over the words in the query
@@ -167,17 +169,32 @@ def run_query(words, operators, invereted_index, all_document_ids):
         word2 = words[i + 1]
 
         if i == 0:
+
+            if word1 in invereted_index:
+                
+                # Get the first list based on the first word if i = 0
+                list1 = invereted_index[word1]
             
-            # Get the first list based on the first word if i = 0
-            list1 = invereted_index[word1]
+            else:
+
+                # Set list1 to an empty list as the word was not in any files
+                list1 = []
             
         else:
             
             # Make the first list the list made from previoius operations if i > 0
-            list1 = document_list
+            list1 = document_ids
+        
+        if word2 in invereted_index:
+                
+            # Get second list of document ids based on the i + 1 word
+            list2 = invereted_index[word2]
+            
+        else:
 
-        # Get second list of document ids based on the i + 1 word
-        list2 = invereted_index[word2]
+            # Set list2 to an empty list as the word was not in any files
+            list2 = []
+      
 
         # Get the operator for the current pair of words
         operator = operators[min(i, num_of_operators)]
@@ -189,22 +206,22 @@ def run_query(words, operators, invereted_index, all_document_ids):
         if operator == "OR":
 
             # Perform union operation
-            document_list, comparison_count = union(list1, list2)
+            document_ids, comparison_count = union(list1, list2)
 
         elif operator == "AND":
 
             # Perform intersection operation
-            document_list, comparison_count = intersection(list1, list2)
+            document_ids, comparison_count = intersection(list1, list2)
 
         elif operator == "AND NOT":
 
             # Perform intersection and not operation
-            document_list, comparison_count = intersection_and_not(list1, list2)
+            document_ids, comparison_count = intersection_and_not(list1, list2)
 
         elif operator == "OR NOT":
 
             # Perform union and not operation
-            document_list, comparison_count = union_or_not(list1, list2, all_document_ids)
+            document_ids, comparison_count = union_or_not(list1, list2, all_document_ids)
 
         else:
 
@@ -215,21 +232,21 @@ def run_query(words, operators, invereted_index, all_document_ids):
         total_number_of_comparisons += comparison_count
 
     # Calculate the number of matched documents
-    number_of_matched_documents = len(document_list)
+    number_of_matched_documents = len(document_ids)
 
-    return number_of_matched_documents, total_number_of_comparisons, document_list
+    return number_of_matched_documents, total_number_of_comparisons, document_ids
 
-def print_list_with_commas(list_to_print):
+def print_results(number_of_matched_documents, total_number_of_comparisons, document_ids, all_document_ids_and_names):
+    
+    print(f"Number of matched documents: {number_of_matched_documents}")
+    print(f"Minimum number of comparisons required: {total_number_of_comparisons}")
+    print("List of retrieved document names: ")
 
-    for i in range(len(list_to_print)):
+    for id in document_ids:
+        print(f" - ID: {id} Name: {all_document_ids_and_names[id]}")
 
-        print(list_to_print[i], end="")
-
-        # Add a comma if it's not the last element
-        if i < len(list_to_print) - 1:
-            print(", ", end="")
-
-    print()  # Print a newline at the end
+    # Print a new line
+    print()
 
 def intersection(list1, list2):
 
@@ -247,8 +264,8 @@ def intersection(list1, list2):
             # If the element satisfies both conditions, add it to the intersection list
             intersection_list.append(element)
 
-            # Increment the number of comparisons
-            comparison_count += 1
+        # Increment the number of comparisons
+        comparison_count += 1
 
     # Return the intersection list
     return intersection_list, comparison_count
@@ -268,8 +285,8 @@ def intersection_and_not(list1, list2):
         if element not in list2:
             intersection_and_not_list.append(element)
 
-            # Increment the number of comparisons
-            comparison_count += 1
+        # Increment the number of comparisons
+        comparison_count += 1
 
     return intersection_and_not_list, comparison_count
 
@@ -291,8 +308,8 @@ def union(list1, list2):
         if element not in union_list:
             union_list.append(element)
 
-            # Increment the number of comparisons
-            comparison_count += 1
+        # Increment the number of comparisons
+        comparison_count += 1
 
     # Return the union list
     return union_list, comparison_count
@@ -319,8 +336,8 @@ def union_or_not(list1, list2, full_list):
         if element in full_list:
             temp_all_document_ids.remove(element)
 
-            # Increment the number of comparisons
-            comparison_count += 1
+        # Increment the number of comparisons
+        comparison_count += 1
 
     union_or_not_list, comp_count = union(union_or_not_list, temp_all_document_ids)
 
@@ -379,3 +396,15 @@ def print_dictionary(dictionary):
     
     # Print the closing curly brace for the dictionary
     print("}")
+
+def print_list_with_commas(list_to_print):
+
+    for i in range(len(list_to_print)):
+
+        print(list_to_print[i], end="")
+
+        # Add a comma if it's not the last element
+        if i < len(list_to_print) - 1:
+            print(", ", end="")
+
+    print()  # Print a newline at the end
