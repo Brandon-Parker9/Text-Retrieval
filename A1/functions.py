@@ -297,7 +297,7 @@ def union(list1, list2):
     # Return the union list
     return union_list, comparison_count
 
-def union_or_not(list1, list2, all_document_ids):
+def union_or_not(list1, list2, full_list):
 
     # Initialize the count of comparisons
     comparison_count = 0
@@ -310,15 +310,13 @@ def union_or_not(list1, list2, all_document_ids):
 
     # Temp array full of all document ids
     temp_all_document_ids = []
-    temp_all_document_ids.extend(all_document_ids)
-
-    #  ************ this is not correct!!!! ************
+    temp_all_document_ids.extend(full_list)
 
     # Iterate over elements in list2
     for element in list2:
 
         # Remove element from result_list if it exists
-        if element in all_document_ids:
+        if element in full_list:
             temp_all_document_ids.remove(element)
 
             # Increment the number of comparisons
