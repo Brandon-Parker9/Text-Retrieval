@@ -4,13 +4,15 @@ from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
 import nltk
 
-# Download necessary NLTK resources
+# Download necessary NLTK resources in quiet mode so it doesnt print status to console
 nltk.download('punkt', quiet=True)
 nltk.download('stopwords', quiet=True)
 
 def create_inverted_index_from_files(folder_path):
 
     files_unable_to_open = []
+
+    all_document_ids = []
 
     # Initialize an empty inverted index dictionary
     inverted_index = {}
@@ -36,8 +38,12 @@ def create_inverted_index_from_files(folder_path):
         # Get the file extension
         _, extension = os.path.splitext(list_of_files[i])
 
+        # Add document id to list of all document ids
+        all_document_ids.append(i)
+
         # Check if the file has a .txt extension
         if extension == ".txt":
+
             # Read the contents of the file and convert to lowercase
             file_contents = read_file(folder_path + "/" + list_of_files[i])
             
@@ -45,8 +51,6 @@ def create_inverted_index_from_files(folder_path):
             if file_contents != None:
     
                 word_tokens = normalize_and_tokenize(file_contents)
-
-                # print(word_tokens)
 
                 # Iterate through each word token
                 for word in word_tokens:
@@ -63,20 +67,19 @@ def create_inverted_index_from_files(folder_path):
                     
                     # append the document index to the list for that word
                     inverted_index[word].append(i)
-                        
-                # print(set_of_words)
-            
+                                    
             # If the file coudl not be opened, add it to a list
             else:
                 files_unable_to_open.append(list_of_files[i])
 
     write_dictionary_to_file(inverted_index)      
 
-    # Return the populated inverted index (for now, it's an empty dictionary)
-    return list_of_files, inverted_index
 
-# Function to keeping only alphanumeric characters and spaces and return a tokenized list of the words
+    return list_of_files, inverted_index, all_document_ids
+
 def normalize_and_tokenize(text):
+    # Function to keeping only alphanumeric characters and spaces and return a tokenized list of the words
+
 
     normalized_text = ""
 
@@ -102,25 +105,230 @@ def user_input():
 
         # Check if the input is a non-empty string and consists only of digits
         if num_queries_input.isdigit():
+
             # Convert the input to an integer and break out of the loop
             num_queries = int(num_queries_input)
             break
+
         else:
+
             # If the input is not a valid number, display an error message and continue the loop
             print("Invalid input. Please enter a valid number.")
 
     input_sentence = input("Input sentence: ")
+
+    # Normalize and tokenzie the input sentence
+    words = normalize_and_tokenize(input_sentence)
+
     input_operation_sequence = input("Input operation Sequence: ")
+
+    operators = []
+    
+    # This is the part where we need to add the user filtering to get the operations
+    # One filter we can't forget about is that the sentence and the operator cant be empty
+
+    # Dont ask me lmao i asked chatgpt to make this ascii art as a place 
+    # holder to know this code needs to be written
+
+    #     ,ggggggggggg,                                                                
+    # dP"""88""""""Y8,                   ,dPYb,                                    I8     
+    # Yb,  88      `8b                   IP'`Yb                                    I8     
+    # `"  88      ,8P     ,ggggg,        I8  8I   gg    gg    ,gggg,gg   ,gggggg,   I8     
+    #     88aaaad8P"     dP"  "Y8gg,     I8  8'   I8    8I   dP"  "Y8I   dP""""8I   I8     
+    #     88""""Yb,      i8'    ,8I     ,I8 dP    I8    8'  i8'    ,8I  ,8'    8I  ,I8,    
+    #     88     "8i     ,d8,   ,d8'    ,d8IP     `8,  ,8' ,d8,   ,d8b,,dP     Y8,,d88b,   
+    #     88      `8i   P"Y8888P"     ,d8I8'      `Y88P'  P"Y8888P"`Y88P      `Y88P""Y888  
+    #     88       Yb,                                                          ,d8I'      
+    #     88        Y8,                                                        ,dP'8I       
+    #     88         Y8                                                        ,8"  8I       
+    #     88         `8b                                                       dP'  8I       
+    #     ,88P          `8                                                       8"   8I       
+    # 8P'                                                               d8b,   Yb, d8I       
+    # d8                                                               `Y88P'    "Y88P"        
+    # ,8P'                                                                                       
+                                                                                     
+
 
     print(f"Number input: {num_queries} \n Input sentence: {input_sentence} \n Input Operation Sequence: {input_operation_sequence}")
 
-    return True
+    return words, operators
 
-def run_query(words, operators):
+def run_query(words, operators, invereted_index, all_document_ids):
+    
+    document_list = []  # List to store the documents that match the query
+    num_of_operators = len(operators)
+    total_number_of_comparisons = 0
 
+    # Iterate over the words in the query
+    for i in range(len(words) - 1):
 
+        # Get the current word and the next word
+        word1 = words[i]
+        word2 = words[i + 1]
 
-    return True
+        if i == 0:
+            
+            # Get the first list based on the first word if i = 0
+            list1 = invereted_index[word1]
+            
+        else:
+            
+            # Make the first list the list made from previoius operations if i > 0
+            list1 = document_list
+
+        # Get second list of document ids based on the i + 1 word
+        list2 = invereted_index[word2]
+
+        # Get the operator for the current pair of words
+        operator = operators[min(i, num_of_operators)]
+
+        # Initialize comparison count for each pair of words
+        comparison_count = 0
+
+        # Perform operations based on the operator
+        if operator == "OR":
+
+            # Perform union operation
+            document_list, comparison_count = union(list1, list2)
+
+        elif operator == "AND":
+
+            # Perform intersection operation
+            document_list, comparison_count = intersection(list1, list2)
+
+        elif operator == "AND NOT":
+
+            # Perform intersection and not operation
+            document_list, comparison_count = intersection_and_not(list1, list2)
+
+        elif operator == "OR NOT":
+
+            # Perform union and not operation
+            document_list, comparison_count = union_or_not(list1, list2, all_document_ids)
+
+        else:
+
+            # Handle invalid operator
+            print("Invalid operation")
+        
+        # Update total number of comparisons
+        total_number_of_comparisons += comparison_count
+
+    # Calculate the number of matched documents
+    number_of_matched_documents = len(document_list)
+
+    return number_of_matched_documents, total_number_of_comparisons, document_list
+
+def print_list_with_commas(list_to_print):
+
+    for i in range(len(list_to_print)):
+
+        print(list_to_print[i], end="")
+
+        # Add a comma if it's not the last element
+        if i < len(list_to_print) - 1:
+            print(", ", end="")
+
+    print()  # Print a newline at the end
+
+def intersection(list1, list2):
+
+    # Initialize the count of comparisons
+    comparison_count = 0
+
+    # Initialize an empty list to store the intersection elements
+    intersection_list = []
+
+    # Iterate over each element in the first list
+    for element in list1:
+
+        # Check if the element is also present in the second list and not already in the intersection list
+        if element in list2 and element not in intersection_list:
+            # If the element satisfies both conditions, add it to the intersection list
+            intersection_list.append(element)
+
+            # Increment the number of comparisons
+            comparison_count += 1
+
+    # Return the intersection list
+    return intersection_list, comparison_count
+
+def intersection_and_not(list1, list2):
+
+    # Initialize the count of comparisons
+    comparison_count = 0
+    
+    # Initialize an empty list to store the intersection elements
+    intersection_and_not_list = []
+
+    # Iterate over elements in list1
+    for element in list1:
+
+        # Check if element is in list2
+        if element not in list2:
+            intersection_and_not_list.append(element)
+
+            # Increment the number of comparisons
+            comparison_count += 1
+
+    return intersection_and_not_list, comparison_count
+
+def union(list1, list2):
+
+    # Initialize the count of comparisons
+    comparison_count = 0
+
+    # Initialize an empty list to store the union elements
+    union_list = []
+
+    # Add all elements from list1 to the union list
+    union_list.extend(list1)
+
+    # Iterate over each element in list2
+    for element in list2:
+
+        # If the element is not already in the union list, add it
+        if element not in union_list:
+            union_list.append(element)
+
+            # Increment the number of comparisons
+            comparison_count += 1
+
+    # Return the union list
+    return union_list, comparison_count
+
+def union_or_not(list1, list2, all_document_ids):
+
+    # Initialize the count of comparisons
+    comparison_count = 0
+    
+    # Initialize an empty list to store the union elements
+    union_or_not_list = []
+
+    # Add all elements from list1
+    union_or_not_list.extend(list1)
+
+    # Temp array full of all document ids
+    temp_all_document_ids = []
+    temp_all_document_ids.extend(all_document_ids)
+
+    #  ************ this is not correct!!!! ************
+
+    # Iterate over elements in list2
+    for element in list2:
+
+        # Remove element from result_list if it exists
+        if element in all_document_ids:
+            temp_all_document_ids.remove(element)
+
+            # Increment the number of comparisons
+            comparison_count += 1
+
+    union_or_not_list, comp_count = union(union_or_not_list, temp_all_document_ids)
+
+    comparison_count += comp_count
+
+    return union_or_not_list, comparison_count
 
 def read_file(file_path):
 
