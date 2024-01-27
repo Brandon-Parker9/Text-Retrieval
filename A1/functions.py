@@ -82,7 +82,6 @@ def create_inverted_index_from_files(folder_path):
 def normalize_and_tokenize(text):
     # Function to keeping only alphanumeric characters and spaces and return a tokenized list of the words
 
-
     normalized_text = ""
 
     # Normalize the file contents by keeping only alphanumeric characters and spaces
@@ -102,6 +101,7 @@ def normalize_and_tokenize(text):
 def user_input():
 
     while True:
+        
         # Ask the user to input the number of queries
         num_queries_input = input("Enter the number of queries you would like to preform: ")
 
