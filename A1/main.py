@@ -1,6 +1,6 @@
 from functions import *
 
-invereted_index, all_document_ids_and_names = create_inverted_index_from_files("./data_small")
+inverted_index, all_document_ids_and_names = create_inverted_index_from_files("./data_small")
 list_of_document_ids = list(all_document_ids_and_names.keys())
 
 # user_input()
@@ -20,19 +20,19 @@ operations4 = ["AND"]
 words5 = ["telephone", "paved" , "roads"]
 operations5 = ["OR NOT", "AND NOT"]
 
-number_of_matched_documents, total_number_of_comparisons, document_ids = run_query(words1, operations1, invereted_index, list_of_document_ids)
+number_of_matched_documents, total_number_of_comparisons, document_ids = run_query(words1, operations1, inverted_index, list_of_document_ids)
 print_results(number_of_matched_documents, total_number_of_comparisons, document_ids, all_document_ids_and_names)
 
-number_of_matched_documents, total_number_of_comparisons, document_ids = run_query(words2, operations2, invereted_index, list_of_document_ids)
+number_of_matched_documents, total_number_of_comparisons, document_ids = run_query(words2, operations2, inverted_index, list_of_document_ids)
 print_results(number_of_matched_documents, total_number_of_comparisons, document_ids, all_document_ids_and_names)
 
-number_of_matched_documents, total_number_of_comparisons, document_ids = run_query(words3, operations3, invereted_index, list_of_document_ids)
+number_of_matched_documents, total_number_of_comparisons, document_ids = run_query(words3, operations3, inverted_index, list_of_document_ids)
 print_results(number_of_matched_documents, total_number_of_comparisons, document_ids, all_document_ids_and_names)
 
-number_of_matched_documents, total_number_of_comparisons, document_ids = run_query(words4, operations4, invereted_index, list_of_document_ids)
+number_of_matched_documents, total_number_of_comparisons, document_ids = run_query(words4, operations4, inverted_index, list_of_document_ids)
 print_results(number_of_matched_documents, total_number_of_comparisons, document_ids, all_document_ids_and_names)
 
-number_of_matched_documents, total_number_of_comparisons, document_ids = run_query(words5, operations5, invereted_index, list_of_document_ids)
+number_of_matched_documents, total_number_of_comparisons, document_ids = run_query(words5, operations5, inverted_index, list_of_document_ids)
 print_results(number_of_matched_documents, total_number_of_comparisons, document_ids, all_document_ids_and_names)
 
 # Testing
@@ -51,7 +51,7 @@ print_results(number_of_matched_documents, total_number_of_comparisons, document
 # result, _ = intersection(list1, list2)
 # print("Intersection of", list1, "AND", list2, "is", result, "\n")
 
-print("UNION DOES NOT INSERT IN SORTED ORDER!!!!!!!!  Must fix lolol\n Also the unino and intersections can probably be optimized \n")
+print("UNION DOES NOT INSERT IN SORTED ORDER!!!!!!!!  Must fix lolol\n Also the union and intersections can probably be optimized \n")
 
 print_dictionary(all_document_ids_and_names)
 

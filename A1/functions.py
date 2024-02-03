@@ -4,7 +4,7 @@ from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
 import nltk
 
-# Download necessary NLTK resources in quiet mode so it doesnt print status to console
+# Download necessary NLTK resources in quiet mode so it doesn't print status to console
 nltk.download('punkt', quiet=True)
 nltk.download('stopwords', quiet=True)
 
@@ -13,7 +13,7 @@ def create_inverted_index_from_files(folder_path):
     # List of file names that were unable to be opened
     files_unable_to_open = []
 
-    # Dictionary of the document ids and their file namesd
+    # Dictionary of the document ids and their file names
     all_document_ids_and_names = {}
 
     # Initialize an empty inverted index dictionary
@@ -22,7 +22,7 @@ def create_inverted_index_from_files(folder_path):
     # Initialize a set to store unique words across all files
     set_of_words = set()
 
-    # Get the set of English stopwords from NLTK
+    # Get the set of English stop words from NLTK
     stop_words = set(stopwords.words('english'))
 
     # List all files in the specified folder
@@ -56,13 +56,14 @@ def create_inverted_index_from_files(folder_path):
 
                 # Iterate through each word token
                 for word in word_tokens:
-                    # Check if the word is not a stopword and has a length greater than 1
+                    # Check if the word is not a stop word and has a length greater than 1
                     if word not in stop_words and len(word) > 1:
                         # Add the word to the set of unique words
                         set_of_words.add(word.lower())
 
                 # Iterate through each word in the set of words
                 for word in set_of_words:
+
                     # if the word is not in the inverted index, add it
                     if word not in inverted_index:
                         inverted_index[word] = []
@@ -70,7 +71,7 @@ def create_inverted_index_from_files(folder_path):
                     # append the document index to the list for that word
                     inverted_index[word].append(i)
                                     
-            # If the file coudl not be opened, add it to a list
+            # If the file could not be opened, add it to a list
             else:
                 files_unable_to_open.append(list_of_files[i])
 
@@ -155,7 +156,7 @@ def user_input():
 
     return words, operators
 
-def run_query(words, operators, invereted_index, all_document_ids):
+def run_query(words, operators, inverted_index, all_document_ids):
     
     document_ids = []  # List to store the document ids that match the query
     num_of_operators = len(operators) - 1
@@ -170,10 +171,10 @@ def run_query(words, operators, invereted_index, all_document_ids):
 
         if i == 0:
 
-            if word1 in invereted_index:
+            if word1 in inverted_index:
                 
                 # Get the first list based on the first word if i = 0
-                list1 = invereted_index[word1]
+                list1 = inverted_index[word1]
             
             else:
 
@@ -182,13 +183,13 @@ def run_query(words, operators, invereted_index, all_document_ids):
             
         else:
             
-            # Make the first list the list made from previoius operations if i > 0
+            # Make the first list the list made from previous operations if i > 0
             list1 = document_ids
         
-        if word2 in invereted_index:
+        if word2 in inverted_index:
                 
             # Get second list of document ids based on the i + 1 word
-            list2 = invereted_index[word2]
+            list2 = inverted_index[word2]
             
         else:
 
