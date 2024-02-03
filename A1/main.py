@@ -5,14 +5,15 @@ import os
 path = os.path.dirname(os.path.abspath(__file__))
 data_path = os.path.join(path, "data")
 
+print("Creating inverted index...")
+
 # Create inverted index and list of document ids
 inverted_index, all_document_ids_and_names = create_inverted_index_from_files(data_path)
 list_of_document_ids = list(all_document_ids_and_names.keys())
 
-# THIS FUNCTION NEEDS TO BE FINISHED
-
 # Get user input, run queries and print results
-# user_input(inverted_index, list_of_document_ids, all_document_ids_and_names)
+user_input(inverted_index, list_of_document_ids, all_document_ids_and_names)
+exit()
 
 words1 = ["cat", "house" , "cards", "table"]
 operations1 = ["OR", "AND", "OR"]
@@ -32,17 +33,17 @@ operations5 = ["OR NOT", "AND NOT"]
 number_of_matched_documents, total_number_of_comparisons, document_ids = run_query(words1, operations1, inverted_index, list_of_document_ids)
 print_results(number_of_matched_documents, total_number_of_comparisons, document_ids, all_document_ids_and_names)
 
-number_of_matched_documents, total_number_of_comparisons, document_ids = run_query(words2, operations2, inverted_index, list_of_document_ids)
-print_results(number_of_matched_documents, total_number_of_comparisons, document_ids, all_document_ids_and_names)
+# number_of_matched_documents, total_number_of_comparisons, document_ids = run_query(words2, operations2, inverted_index, list_of_document_ids)
+# print_results(number_of_matched_documents, total_number_of_comparisons, document_ids, all_document_ids_and_names)
 
-number_of_matched_documents, total_number_of_comparisons, document_ids = run_query(words3, operations3, inverted_index, list_of_document_ids)
-print_results(number_of_matched_documents, total_number_of_comparisons, document_ids, all_document_ids_and_names)
+# number_of_matched_documents, total_number_of_comparisons, document_ids = run_query(words3, operations3, inverted_index, list_of_document_ids)
+# print_results(number_of_matched_documents, total_number_of_comparisons, document_ids, all_document_ids_and_names)
 
-number_of_matched_documents, total_number_of_comparisons, document_ids = run_query(words4, operations4, inverted_index, list_of_document_ids)
-print_results(number_of_matched_documents, total_number_of_comparisons, document_ids, all_document_ids_and_names)
+# number_of_matched_documents, total_number_of_comparisons, document_ids = run_query(words4, operations4, inverted_index, list_of_document_ids)
+# print_results(number_of_matched_documents, total_number_of_comparisons, document_ids, all_document_ids_and_names)
 
-number_of_matched_documents, total_number_of_comparisons, document_ids = run_query(words5, operations5, inverted_index, list_of_document_ids)
-print_results(number_of_matched_documents, total_number_of_comparisons, document_ids, all_document_ids_and_names)
+# number_of_matched_documents, total_number_of_comparisons, document_ids = run_query(words5, operations5, inverted_index, list_of_document_ids)
+# print_results(number_of_matched_documents, total_number_of_comparisons, document_ids, all_document_ids_and_names)
 
 # Testing
 # list1 = [1, 2, 3, 4, 5]
