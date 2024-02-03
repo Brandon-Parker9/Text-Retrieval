@@ -55,8 +55,6 @@ print_results(number_of_matched_documents, total_number_of_comparisons, document
 # result, _ = intersection(list1, list2)
 # print("Intersection of", list1, "AND", list2, "is", result, "\n")
 
-print("UNION DOES NOT INSERT IN SORTED ORDER!!!!!!!!  Must fix lolol\n Also the union and intersections can probably be optimized \n")
-
 # Print out all the files that were used to create inverted index
 # print_dictionary(all_document_ids_and_names)
 

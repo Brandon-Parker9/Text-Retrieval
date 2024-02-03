@@ -324,6 +324,9 @@ def union(list1, list2):
         # Increment the number of comparisons
         comparison_count += 1
 
+    # sort the list
+    union_list.sort()
+
     # Return the union list
     return union_list, comparison_count
 
