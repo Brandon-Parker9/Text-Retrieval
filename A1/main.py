@@ -1,7 +1,12 @@
 from functions import *
+import os
+
+# Get the path to main file being excecuted
+path = os.path.dirname(os.path.abspath(__file__))
+data_path = os.path.join(path, "data")
 
 # Create inverted index and list of document ids
-inverted_index, all_document_ids_and_names = create_inverted_index_from_files("./data")
+inverted_index, all_document_ids_and_names = create_inverted_index_from_files(data_path)
 list_of_document_ids = list(all_document_ids_and_names.keys())
 
 # THIS FUNCTION NEEDS TO BE FINISHED
