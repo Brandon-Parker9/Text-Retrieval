@@ -99,7 +99,7 @@ def normalize_and_tokenize(text):
 
     return text_tokenized
 
-def user_input():
+def user_input(inverted_index, list_of_document_ids, all_document_ids_and_names):
 
     while True:
         
@@ -118,43 +118,55 @@ def user_input():
             # If the input is not a valid number, display an error message and continue the loop
             print("Invalid input. Please enter a valid number.")
 
-    input_sentence = input("Input sentence: ")
+    for i in range(num_queries):
 
-    # Normalize and tokenzie the input sentence
-    words = normalize_and_tokenize(input_sentence)
+        #  Get user input sentence
+        input_sentence = input("Input sentence: ")
 
-    input_operation_sequence = input("Input operation Sequence: ")
+        # Normalize and tokenize the input sentence
+        words = normalize_and_tokenize(input_sentence)
 
-    operators = []
-    
-    # This is the part where we need to add the user filtering to get the operations
-    # One filter we can't forget about is that the sentence and the operator cant be empty
+        # get user desired operations
+        input_operation_sequence = input("Input operation Sequence: ")
 
-    # Dont ask me lmao i asked chatgpt to make this ascii art as a place 
-    # holder to know this code needs to be written
+        operators = []
+        
+        # This is the part where we need to add the user filtering to get the operations
+        # One filter we can't forget about is that the sentence and the operator cant be empty
 
-    #     ,ggggggggggg,                                                                
-    # dP"""88""""""Y8,                   ,dPYb,                                    I8     
-    # Yb,  88      `8b                   IP'`Yb                                    I8     
-    # `"  88      ,8P     ,ggggg,        I8  8I   gg    gg    ,gggg,gg   ,gggggg,   I8     
-    #     88aaaad8P"     dP"  "Y8gg,     I8  8'   I8    8I   dP"  "Y8I   dP""""8I   I8     
-    #     88""""Yb,      i8'    ,8I     ,I8 dP    I8    8'  i8'    ,8I  ,8'    8I  ,I8,    
-    #     88     "8i     ,d8,   ,d8'    ,d8IP     `8,  ,8' ,d8,   ,d8b,,dP     Y8,,d88b,   
-    #     88      `8i   P"Y8888P"     ,d8I8'      `Y88P'  P"Y8888P"`Y88P      `Y88P""Y888  
-    #     88       Yb,                                                          ,d8I'      
-    #     88        Y8,                                                        ,dP'8I       
-    #     88         Y8                                                        ,8"  8I       
-    #     88         `8b                                                       dP'  8I       
-    #     ,88P          `8                                                       8"   8I       
-    # 8P'                                                               d8b,   Yb, d8I       
-    # d8                                                               `Y88P'    "Y88P"        
-    # ,8P'                                                                                       
-                                                                                     
+        # Dont ask me lmao i asked chatgpt to make this ascii art as a place 
+        # holder to know this code needs to be written
 
+        #     ,ggggggggggg,                                                                
+        # dP"""88""""""Y8,                   ,dPYb,                                    I8     
+        # Yb,  88      `8b                   IP'`Yb                                    I8     
+        # `"  88      ,8P     ,ggggg,        I8  8I   gg    gg    ,gggg,gg   ,gggggg,   I8     
+        #     88aaaad8P"     dP"  "Y8gg,     I8  8'   I8    8I   dP"  "Y8I   dP""""8I   I8     
+        #     88""""Yb,      i8'    ,8I     ,I8 dP    I8    8'  i8'    ,8I  ,8'    8I  ,I8,    
+        #     88     "8i     ,d8,   ,d8'    ,d8IP     `8,  ,8' ,d8,   ,d8b,,dP     Y8,,d88b,   
+        #     88      `8i   P"Y8888P"     ,d8I8'      `Y88P'  P"Y8888P"`Y88P      `Y88P""Y888  
+        #     88       Yb,                                                          ,d8I'      
+        #     88        Y8,                                                        ,dP'8I       
+        #     88         Y8                                                        ,8"  8I       
+        #     88         `8b                                                       dP'  8I       
+        #     ,88P          `8                                                       8"   8I       
+        # 8P'                                                               d8b,   Yb, d8I       
+        # d8                                                               `Y88P'    "Y88P"        
+        # ,8P'    
 
-    print(f"Number input: {num_queries} \n Input sentence: {input_sentence} \n Input Operation Sequence: {input_operation_sequence}")
+        # Used for testing purposes
+        # print(f"Number input: {num_queries} \n Input sentence: {input_sentence} \n Input Operation Sequence: {input_operation_sequence}")                                                                                   
 
-    return words, operators
+        # Print out expected preprocessed query
+        # NEEDS TO BE COMPLETED
+
+        # Run query with user input   
+        number_of_matched_documents, total_number_of_comparisons, document_ids = run_query(words, operators, inverted_index, list_of_document_ids)
+        
+        # Print out results of query
+        print_results(number_of_matched_documents, total_number_of_comparisons, document_ids, all_document_ids_and_names)
+
+    return None
 
 def run_query(words, operators, inverted_index, all_document_ids):
     
@@ -409,3 +421,5 @@ def print_list_with_commas(list_to_print):
             print(", ", end="")
 
     print()  # Print a newline at the end
+
+    return None

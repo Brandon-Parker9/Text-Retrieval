@@ -1,9 +1,11 @@
 from functions import *
 
-inverted_index, all_document_ids_and_names = create_inverted_index_from_files("./data_small")
+# Create inverted index and list of document ids
+inverted_index, all_document_ids_and_names = create_inverted_index_from_files("./data")
 list_of_document_ids = list(all_document_ids_and_names.keys())
 
-# user_input()
+# This function needs to be finished
+# user_input(inverted_index, list_of_document_ids, all_document_ids_and_names)
 
 words1 = ["cat", "house" , "cards", "table"]
 operations1 = ["OR", "AND", "OR"]
@@ -53,5 +55,6 @@ print_results(number_of_matched_documents, total_number_of_comparisons, document
 
 print("UNION DOES NOT INSERT IN SORTED ORDER!!!!!!!!  Must fix lolol\n Also the union and intersections can probably be optimized \n")
 
-print_dictionary(all_document_ids_and_names)
+# Print out all the files that were used to create inverted index
+# print_dictionary(all_document_ids_and_names)
 
