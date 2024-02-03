@@ -4,7 +4,9 @@ from functions import *
 inverted_index, all_document_ids_and_names = create_inverted_index_from_files("./data")
 list_of_document_ids = list(all_document_ids_and_names.keys())
 
-# This function needs to be finished
+# THIS FUNCTION NEEDS TO BE FINISHED
+
+# Get user input, run queries and print results
 # user_input(inverted_index, list_of_document_ids, all_document_ids_and_names)
 
 words1 = ["cat", "house" , "cards", "table"]
