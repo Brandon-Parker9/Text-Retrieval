@@ -99,6 +99,7 @@ def remove_stop_words_from_user_query(words):
         # Check if the word is not a stop word and has a length greater than 1
         if word not in stop_words and len(word) > 1:
             
+            # Check if the word is a duplicate
             if word not in set_of_words:
                 set_of_words.append(word)
 
@@ -204,11 +205,9 @@ def user_input(inverted_index, list_of_document_ids, all_document_ids_and_names)
             
             # Normalize and tokenize the input sentence
             words = normalize_and_tokenize(input_sentence)
-            print("Words from user query:")
-            print(words)
+
+            #  Remove stop words
             words = remove_stop_words_from_user_query(words)
-            print("Words from user query:")
-            print(words)
             
             if len(words) == 0:
                 print("Invalid input. Please enter a valid sentence.")
