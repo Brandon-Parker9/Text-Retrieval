@@ -1,12 +1,15 @@
 import nltk 
 import os
+import re
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
-import nltk
 
 # Download necessary NLTK resources in quiet mode so it doesn't print status to console
 nltk.download('punkt', quiet=True)
 nltk.download('stopwords', quiet=True)
+
+# Constants
+OPERATORS = ["AND", "OR", "NOT"]
 
 def create_inverted_index_from_files(folder_path):
 
@@ -99,6 +102,56 @@ def normalize_and_tokenize(text):
 
     return text_tokenized
 
+def process_operators(input_operation_sequence):
+    # Function to process the input operation sequence and return a list of operators
+
+    # Initialize an empty list to store the operators
+    operators = []
+
+    # make the input_operation_sequence uppercase
+    input_operation_sequence = input_operation_sequence.upper()
+
+    # Remove all non-alphabetic characters
+    input_operation_sequence = re.sub(r'[^A-Z\s]', '', input_operation_sequence)
+    
+    # Remove all leading and trailing whitespace
+    input_operation_sequence = input_operation_sequence.strip()
+    
+    # Remove extra spaces and tabs
+    input_operation_sequence = re.sub(r'[ \t]{2,}', ' ', input_operation_sequence)
+    
+    # Split the input operation sequence into a list of operators
+    operators = input_operation_sequence.split(" ")
+    
+    # Remove all operators that are not in the OPERATORS list
+    operators = [operator for operator in operators if operator in OPERATORS]
+    
+    #group "AND NOT" and "OR NOT" together, remove "NOT NOT" entirely
+    grouped_operators = []
+    i = 0
+    while i < len(operators):
+        
+        # Check if the current operator is "AND" or "OR" and the next operator is "NOT"
+        if i < len(operators) - 1 and operators[i + 1] == "NOT":
+            grouped_operators.append(operators[i] + " NOT") # Add "AND NOT" or "OR NOT" to the list
+            i += 2
+            
+        # Check if the current operator is "NOT" without a previous operator
+        elif operators[i] == "NOT":
+            i += 1
+            
+        # Standard operator
+        else:
+            grouped_operators.append(operators[i])
+            i += 1
+    
+    # Remove and double negatives
+    for group in grouped_operators:
+        if group == "NOT NOT":
+            grouped_operators.remove(group)
+    
+    return grouped_operators
+    
 def user_input(inverted_index, list_of_document_ids, all_document_ids_and_names):
 
     while True:
@@ -118,50 +171,59 @@ def user_input(inverted_index, list_of_document_ids, all_document_ids_and_names)
             # If the input is not a valid number, display an error message and continue the loop
             print("Invalid input. Please enter a valid number.")
 
-    for i in range(num_queries):
+    for _ in range(num_queries):
+        
+        # Get user input sentence
 
-        #  Get user input sentence
-        input_sentence = input("Input sentence: ")
+        words = []
+        
+        while len(words) == 0:
+            # Get user input sentence
+            input_sentence = input("Input sentence: ")
+            
+            # Normalize and tokenize the input sentence
+            words = normalize_and_tokenize(input_sentence)
+            
+            if len(words) == 0:
+                print("Invalid input. Please enter a valid sentence.")
 
-        # Normalize and tokenize the input sentence
-        words = normalize_and_tokenize(input_sentence)
-
-        # get user desired operations
-        input_operation_sequence = input("Input operation Sequence: ")
-
+        # Get user desired operations
+        
         operators = []
         
-        # This is the part where we need to add the user filtering to get the operations
-        # One filter we can't forget about is that the sentence and the operator cant be empty
+        while len(operators) == 0:
+            # Get user input operation sequence
+            input_operation_sequence = input("Input operation Sequence: ")
+            
+            # Process the input operation sequence to get a list of operators
+            operators = process_operators(input_operation_sequence)
+            
+            if len(operators) == 0:
+                print("Invalid input. Please enter a valid operation sequence.")
 
-        # Dont ask me lmao i asked chatgpt to make this ascii art as a place 
-        # holder to know this code needs to be written
-
-        #     ,ggggggggggg,                                                                
-        # dP"""88""""""Y8,                   ,dPYb,                                    I8     
-        # Yb,  88      `8b                   IP'`Yb                                    I8     
-        # `"  88      ,8P     ,ggggg,        I8  8I   gg    gg    ,gggg,gg   ,gggggg,   I8     
-        #     88aaaad8P"     dP"  "Y8gg,     I8  8'   I8    8I   dP"  "Y8I   dP""""8I   I8     
-        #     88""""Yb,      i8'    ,8I     ,I8 dP    I8    8'  i8'    ,8I  ,8'    8I  ,I8,    
-        #     88     "8i     ,d8,   ,d8'    ,d8IP     `8,  ,8' ,d8,   ,d8b,,dP     Y8,,d88b,   
-        #     88      `8i   P"Y8888P"     ,d8I8'      `Y88P'  P"Y8888P"`Y88P      `Y88P""Y888  
-        #     88       Yb,                                                          ,d8I'      
-        #     88        Y8,                                                        ,dP'8I       
-        #     88         Y8                                                        ,8"  8I       
-        #     88         `8b                                                       dP'  8I       
-        #     ,88P          `8                                                       8"   8I       
-        # 8P'                                                               d8b,   Yb, d8I       
-        # d8                                                               `Y88P'    "Y88P"        
-        # ,8P'    
-
-        # Used for testing purposes
-        # print(f"Number input: {num_queries} \n Input sentence: {input_sentence} \n Input Operation Sequence: {input_operation_sequence}")                                                                                   
-
-        # Print out expected preprocessed query
-        # NEEDS TO BE COMPLETED
-
+        # Print the full query with alternating words and operators, removing any trailing operators or words
+        print("Full preprocessed query: ", end="")
+        
+        cleaned_words = []
+        cleaned_operators = []
+        # alternate between words and operators stopping at the last word
+        if len(words) > 1:
+            while len(words) > 0:
+                cleaned_words.append(words.pop(0))
+                print(cleaned_words[-1], end=" ")
+                if len(operators) > 0 and len(words) > 0:
+                    cleaned_operators.append(operators.pop(0))
+                    print(cleaned_operators[-1], end=" ")
+                else:
+                    break
+        else:
+            cleaned_words.append(words.pop(0))
+            print(cleaned_words[-1], end=" ")
+                
+        print()  # Print a newline at the end
+        
         # Run query with user input   
-        number_of_matched_documents, total_number_of_comparisons, document_ids = run_query(words, operators, inverted_index, list_of_document_ids)
+        number_of_matched_documents, total_number_of_comparisons, document_ids = run_query(cleaned_words, cleaned_operators, inverted_index, list_of_document_ids)
         
         # Print out results of query
         print_results(number_of_matched_documents, total_number_of_comparisons, document_ids, all_document_ids_and_names)
