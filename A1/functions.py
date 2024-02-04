@@ -3,6 +3,7 @@ import os
 import re
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
+import nltk
 
 # Download necessary NLTK resources in quiet mode so it doesn't print status to console
 nltk.download('punkt', quiet=True)
@@ -59,8 +60,10 @@ def create_inverted_index_from_files(folder_path):
 
                 # Iterate through each word token
                 for word in word_tokens:
+
                     # Check if the word is not a stop word and has a length greater than 1
                     if word not in stop_words and len(word) > 1:
+
                         # Add the word to the set of unique words
                         set_of_words.add(word.lower())
 
@@ -82,6 +85,24 @@ def create_inverted_index_from_files(folder_path):
 
 
     return inverted_index, all_document_ids_and_names
+
+def remove_stop_words_from_user_query(words):
+
+    set_of_words = []
+
+    # Get the set of English stop words from NLTK
+    stop_words = set(stopwords.words('english'))
+
+    # Iterate through each word token
+    for word in words:
+
+        # Check if the word is not a stop word and has a length greater than 1
+        if word not in stop_words and len(word) > 1:
+            
+            if word not in set_of_words:
+                set_of_words.append(word)
+
+    return set_of_words
 
 def normalize_and_tokenize(text):
     # Function to keeping only alphanumeric characters and spaces and return a tokenized list of the words
@@ -183,6 +204,11 @@ def user_input(inverted_index, list_of_document_ids, all_document_ids_and_names)
             
             # Normalize and tokenize the input sentence
             words = normalize_and_tokenize(input_sentence)
+            print("Words from user query:")
+            print(words)
+            words = remove_stop_words_from_user_query(words)
+            print("Words from user query:")
+            print(words)
             
             if len(words) == 0:
                 print("Invalid input. Please enter a valid sentence.")
@@ -200,6 +226,7 @@ def user_input(inverted_index, list_of_document_ids, all_document_ids_and_names)
             
             if len(operators) == 0:
                 print("Invalid input. Please enter a valid operation sequence.")
+
 
         # Print the full query with alternating words and operators, removing any trailing operators or words
         print("Full preprocessed query: ", end="")
