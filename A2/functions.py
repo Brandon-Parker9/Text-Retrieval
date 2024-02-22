@@ -215,7 +215,7 @@ def search_phrase_query(query_terms, positional_index, proximity=5):
 
                     # Check if the next term exists within the specified proximity of the current term
                     for pos_next_term in next_term_info:
-                        if (pos_next_term - curr_pos) <= 5 and (pos_next_term - curr_pos) >= 0:
+                        if (pos_next_term - curr_pos) <= proximity and (pos_next_term - curr_pos) >= 0:
                             term_found = True
                             curr_pos = pos_next_term
                             break
@@ -310,6 +310,45 @@ def generate_query_vector(query_terms, positional_index):
             query_vector[index] = 1
 
     return query_vector
+
+def rank_documents_by_TF_IDF(matching_document_ids, query_vector, positional_index, all_document_ids_and_names):
+
+    # Generate TF-IDF matrices
+    TF_IDF_matrices = generate_TF_IDF_matrices(positional_index, all_document_ids_and_names)
+
+    # Initialize the results dictionary
+    results = {'matching_document_ids' : matching_document_ids}
+
+    # Iterate through matching document IDs
+    for matched_id in matching_document_ids:
+
+        # Initialize sub-dictionary for the current document
+        results[matched_id] = {}
+        
+        # Calculate dot product of query vector with TF-IDF vectors for different term frequency methods
+        results[matched_id][TermFrequency.BINARY] = dot_product(query_vector, TF_IDF_matrices[TermFrequency.BINARY][matched_id])
+        results[matched_id][TermFrequency.RAW_COUNT] = dot_product(query_vector, TF_IDF_matrices[TermFrequency.RAW_COUNT][matched_id])
+        results[matched_id][TermFrequency.TF] = dot_product(query_vector, TF_IDF_matrices[TermFrequency.TF][matched_id])
+        results[matched_id][TermFrequency.LOG_NORMALIZATION] = dot_product(query_vector, TF_IDF_matrices[TermFrequency.LOG_NORMALIZATION][matched_id])
+        results[matched_id][TermFrequency.DOUBLE_NORMALIZATION] = dot_product(query_vector, TF_IDF_matrices[TermFrequency.DOUBLE_NORMALIZATION][matched_id])
+
+    return results
+
+def dot_product(vector1, vector2):
+
+    # Ensure both vectors have the same length
+    if len(vector1) != len(vector2):
+        raise ValueError("Vectors must have the same length.")
+
+    # Initialize the dot product to zero
+    dot_product = 0
+
+    # Iterate through corresponding elements of the vectors
+    for i in range(len(vector1)):
+        # Accumulate the product of corresponding elements
+        dot_product += vector1[i] * vector2[i]
+
+    return round(dot_product, 2)
 
 def read_file(file_path):
 
@@ -416,12 +455,42 @@ def user_input(positional_index, all_document_ids_and_names):
     # Remove stop words from the phrase query
     query_terms = remove_stop_words_from_user_query(query_terms)
 
+    # Search for matching document IDs based on the phrase query
     matching_document_ids = search_phrase_query(query_terms, positional_index)
     print_results_without_ranks(matching_document_ids, all_document_ids_and_names)
 
+    # Generate the query vector based on the query terms and positional index
     query_vector = generate_query_vector(query_terms, positional_index)
 
-    print_list_with_commas(query_vector)
+    # Rank the search results by TF-IDF scores
+    rank_results = rank_documents_by_TF_IDF(matching_document_ids, query_vector, positional_index, all_document_ids_and_names)
+
+    # Print the ranked search results
+    print_results_with_ranks(rank_results, all_document_ids_and_names)
+
+    return None
+
+def print_results_with_ranks(rank_results, all_document_ids_and_names):
+    
+    print("\nBinary Rankings: ")
+    for matched_id in rank_results["matching_document_ids"]:
+        print(f" - ID: {matched_id:3} Name: {all_document_ids_and_names[matched_id]['name']:15} Rank: {rank_results[matched_id][TermFrequency.BINARY]:6} ")
+
+    print("\nRaw Count Rankings: ")
+    for matched_id in rank_results["matching_document_ids"]:
+        print(f" - ID: {matched_id:3} Name: {all_document_ids_and_names[matched_id]['name']:15} Rank: {rank_results[matched_id][TermFrequency.RAW_COUNT]:6} ")
+
+    print("\nTerm Frequency Rankings: ")
+    for matched_id in rank_results["matching_document_ids"]:
+        print(f" - ID: {matched_id:3} Name: {all_document_ids_and_names[matched_id]['name']:15} Rank: {rank_results[matched_id][TermFrequency.TF]:6} ")
+
+    print("\nLog Normalization Rankings: ")
+    for matched_id in rank_results["matching_document_ids"]:
+        print(f" - ID: {matched_id:3} Name: {all_document_ids_and_names[matched_id]['name']:15} Rank: {rank_results[matched_id][TermFrequency.LOG_NORMALIZATION]:6} ")
+
+    print("\nDouble Normalization Rankings: ")
+    for matched_id in rank_results["matching_document_ids"]:
+        print(f" - ID: {matched_id:3} Name: {all_document_ids_and_names[matched_id]['name']:15} Rank: {rank_results[matched_id][TermFrequency.DOUBLE_NORMALIZATION]:6} ")
 
     return None
 
@@ -429,10 +498,7 @@ def print_results_without_ranks(matching_document_ids, all_document_ids_and_name
     
     print("\nList of matched document names NOT RANKED: ")
 
-    for id in matching_document_ids:
-        print(f" - ID: {id} Name: {all_document_ids_and_names[id]['name']}")
-
-    # Print a new line
-    print()
+    for matched_id in matching_document_ids:
+        print(f" - ID: {matched_id:3} Name: {all_document_ids_and_names[matched_id]['name']:15}")
 
     return None
