@@ -125,8 +125,6 @@ def search_phrase_query(phrase_query, positional_index, proximity=5):
         if term in positional_index:
             positional_info.append(positional_index[term])
 
-    print(positional_info)
-
     # Initialize a list to store the final matching documents
     matching_documents = []
 
@@ -251,3 +249,33 @@ def print_list_with_commas(list_to_print):
 
     return None
 
+def user_input(positional_index, all_document_ids_and_names):
+
+    while True:
+
+        phrase_query = input("Enter the phrase query you would like to search for (max 5 words): ")
+        
+        # Tokenize the phrase query and count the number of words
+        num_words = len(phrase_query.split())
+        if num_words > 5:
+
+            print("Error: Maximum of 5 words allowed. Please try again.")
+        else:
+            break
+
+    matching_document_ids = search_phrase_query(phrase_query, positional_index)
+    print_results(matching_document_ids, all_document_ids_and_names)
+
+    return None
+
+def print_results(matching_document_ids, all_document_ids_and_names):
+    
+    print("\nList of matched document names: ")
+
+    for id in matching_document_ids:
+        print(f" - ID: {id} Name: {all_document_ids_and_names[id]}")
+
+    # Print a new line
+    print()
+
+    return None
