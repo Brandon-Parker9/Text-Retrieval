@@ -12,9 +12,9 @@ positional_index, all_document_ids_and_names = create_positional_index_from_file
 
 print_dictionary(all_document_ids_and_names)
 
-generate_TF_IDF_matrices(positional_index, all_document_ids_and_names)
+# generate_TF_IDF_matrices(positional_index, all_document_ids_and_names)
 
 # Get user input, run queries and print results
-# user_input(positional_index, all_document_ids_and_names)
+user_input(positional_index, all_document_ids_and_names)
 
 exit()

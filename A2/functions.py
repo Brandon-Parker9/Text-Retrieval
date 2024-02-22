@@ -183,13 +183,7 @@ def normalize_and_tokenize(text):
 
     return text_tokenized
 
-def search_phrase_query(phrase_query, positional_index, proximity=5):
-
-    # Tokenize and normalize the phrase query
-    query_terms = normalize_and_tokenize(phrase_query)
-
-    # Remove stop words from the phrase query
-    query_terms = remove_stop_words_from_user_query(query_terms)
+def search_phrase_query(query_terms, positional_index, proximity=5):
 
     # Retrieve positional information for each term in the phrase query
     positional_info = []
@@ -291,6 +285,32 @@ def generate_TF_IDF_matrices(positional_index, all_document_ids_and_names):
     
     return TF_IDF_matrices
 
+def generate_query_vector(query_terms, positional_index):
+
+    # Initialize the query vector
+    query_vector = []
+
+    # Get the keys of the positional index
+    word_key_list = list(positional_index.keys())
+
+    # Initialize the query vector with zeros
+    for _ in range(len(positional_index)):
+        query_vector.append(0)
+
+    # Iterate through each term in the query terms
+    for term in query_terms:
+
+        # Check if the term is in the positional index
+        if term in positional_index:
+
+            # Get the index of the term in the word key list
+            index = word_key_list.index(term)
+
+            # Set the corresponding element in the query vector to 1
+            query_vector[index] = 1
+
+    return query_vector
+
 def read_file(file_path):
 
     try:
@@ -390,14 +410,24 @@ def user_input(positional_index, all_document_ids_and_names):
         else:
             break
 
-    matching_document_ids = search_phrase_query(phrase_query, positional_index)
-    print_results(matching_document_ids, all_document_ids_and_names)
+     # Tokenize and normalize the phrase query
+    query_terms = normalize_and_tokenize(phrase_query)
+
+    # Remove stop words from the phrase query
+    query_terms = remove_stop_words_from_user_query(query_terms)
+
+    matching_document_ids = search_phrase_query(query_terms, positional_index)
+    print_results_without_ranks(matching_document_ids, all_document_ids_and_names)
+
+    query_vector = generate_query_vector(query_terms, positional_index)
+
+    print_list_with_commas(query_vector)
 
     return None
 
-def print_results(matching_document_ids, all_document_ids_and_names):
+def print_results_without_ranks(matching_document_ids, all_document_ids_and_names):
     
-    print("\nList of matched document names: ")
+    print("\nList of matched document names NOT RANKED: ")
 
     for id in matching_document_ids:
         print(f" - ID: {id} Name: {all_document_ids_and_names[id]['name']}")
