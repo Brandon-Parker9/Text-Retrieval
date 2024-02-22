@@ -1,0 +1,253 @@
+import nltk 
+import os
+import re
+from nltk.corpus import stopwords
+from nltk.tokenize import word_tokenize
+import nltk
+
+# Download necessary NLTK resources in quiet mode so it doesn't print status to console
+nltk.download('punkt', quiet=True)
+nltk.download('stopwords', quiet=True)
+
+# Constants
+OPERATORS = ["AND", "OR", "NOT"]
+
+
+def create_positional_index_from_files(folder_path):
+
+    # List of file names that were unable to be opened
+    files_unable_to_open = []
+
+    # Dictionary of the document ids and their file names
+    all_document_ids_and_names = {}
+
+    # Initialize an empty positional index dictionary
+    positional_index = {}
+
+    # Initialize a list of words
+    list_of_words = []
+
+    # Get the set of English stop words from NLTK
+    stop_words = set(stopwords.words('english'))
+
+    # List all files in the specified folder
+    list_of_files = os.listdir(folder_path)
+
+    # Iterate through each file in the folder
+    for i in range(len(list_of_files)):
+
+        # Initialize variables to store word tokens
+        word_tokens = []
+
+        # empty the list of words
+        list_of_words.clear()
+
+        # Get the file extension
+        _, extension = os.path.splitext(list_of_files[i])
+
+        # Check if the file has a .txt extension
+        if extension == ".txt":
+
+            # Add document id and name to the dictionary
+            all_document_ids_and_names[i] = list_of_files[i]
+
+            # Read the contents of the file and convert to lowercase
+            file_contents = read_file(folder_path + "/" + list_of_files[i])
+            
+            # Check if file was able to be opened
+            if file_contents != None:
+    
+                word_tokens = normalize_and_tokenize(file_contents)
+
+                # Iterate through each word token
+                for word in word_tokens:
+
+                    # Check if the word is not a stop word and has a length greater than 1
+                    if word.lower() not in stop_words and len(word) > 1:
+
+                        # Add the word to the set of unique words
+                        list_of_words.append(word.lower())
+
+                # Iterate through each word in the set of words
+                for pos in range(len(list_of_words)):
+
+                    word = list_of_words[pos]
+
+                    # if the word is not in the positional index, add it
+                    if word not in positional_index:
+                        positional_index[word] = {}
+
+                    # add the document index to the list for that word if it doesn't exist
+                    if i not in positional_index[word]:
+                         positional_index[word][i] = []
+                    
+                    # append the word position for that document
+                    positional_index[word][i].append(pos)
+                                    
+            # If the file could not be opened, add it to a list
+            else:
+                files_unable_to_open.append(list_of_files[i])
+
+    write_dictionary_to_file(positional_index)      
+
+    return positional_index, all_document_ids_and_names
+
+def normalize_and_tokenize(text):
+    # Function to keeping only alphanumeric characters and spaces and return a tokenized list of the words
+
+    normalized_text = ""
+
+    # Normalize the file contents by keeping only alphanumeric characters and spaces
+    for character in text:
+        if character.isalnum() or character == " ":
+            normalized_text += character
+
+        # replace all the \n and \r with regular spaces
+        elif character == "\n" or character == "\r":
+            normalized_text += " "
+
+    # Tokenize the normalized file contents into words
+    text_tokenized = word_tokenize(normalized_text)
+
+    return text_tokenized
+
+def search_phrase_query(phrase_query, positional_index, proximity=5):
+
+    # Tokenize and normalize the phrase query
+    query_terms = normalize_and_tokenize(phrase_query)
+
+    # Remove stop words from the phrase query
+    query_terms = remove_stop_words_from_user_query(query_terms)
+
+    # Retrieve positional information for each term in the phrase query
+    positional_info = []
+    for term in query_terms:
+        if term in positional_index:
+            positional_info.append(positional_index[term])
+
+    print(positional_info)
+
+    # Initialize a list to store the final matching documents
+    matching_documents = []
+
+    # If the number of query terms doesn't match the terms retrieved from positional index
+    # then the phrase cannot exist as all the words are on in the index
+    if (len(positional_info) == len(query_terms)):
+
+        # Iterate over positions of the first term in the document
+        for doc_id in positional_info[0]:
+            positions_first_term = positional_info[0][doc_id]
+
+            # Check proximity for each position of the first term
+            for pos_first_term in positions_first_term:
+                found = True
+                curr_pos = pos_first_term
+
+                # Check proximity for each subsequent term
+                for i in range(1, len(query_terms)):
+
+                    next_term_info = positional_info[i].get(doc_id, [])
+                    term_found = False
+
+                    # Check if the next term exists within the specified proximity of the current term
+                    for pos_next_term in next_term_info:
+                        if (pos_next_term - curr_pos) <= 5 and (pos_next_term - curr_pos) >= 0:
+                            term_found = True
+                            curr_pos = pos_next_term
+                            break
+
+                    if not term_found:
+                        found = False
+                        break
+
+                if found:
+                    matching_documents.append(doc_id)
+                    break
+
+    return matching_documents
+
+def read_file(file_path):
+
+    try:
+
+        # Attempt to open the file at the specified file_path in read mode ('r')
+        with open(file_path, 'r', encoding="utf-8", errors='ignore') as file:
+            
+            # Read the contents of the file
+            contents = file.read()
+
+        # Return the contents of the file
+        return contents
+    
+    except FileNotFoundError:
+
+        # Handle the case where the specified file is not found
+        print(f"Error with file {file_path}: File not found at path '{file_path}'")
+
+        return None
+    
+    except Exception as e:
+
+        # Handle other exceptions
+        print(f"Error with file {file_path}: {e}")
+
+        return None
+
+def remove_stop_words_from_user_query(words):
+
+    set_of_words = []
+
+    # Get the set of English stop words from NLTK
+    stop_words = set(stopwords.words('english'))
+
+    # Iterate through each word token
+    for word in words:
+
+        # Check if the word is not a stop word and has a length greater than 1
+        if word not in stop_words and len(word) > 1:
+            
+            # Check if the word is a duplicate
+            if word not in set_of_words:
+                set_of_words.append(word)
+
+    return set_of_words
+
+def write_dictionary_to_file(dictionary):
+
+    # Open a file named "dictionary.txt" in write mode ('w') with UTF-8 encoding
+    with open("dictionary.txt", 'w', encoding="utf-8") as f:
+
+        # Iterate through key-value pairs in the dictionary
+        for key, value in dictionary.items():
+
+            # Write each key-value pair to the file with a newline character
+            f.write(f"{key}:{value}\n")
+
+def print_dictionary(dictionary):
+
+    # Print the opening curly brace for the dictionary
+    print("{")
+    
+    # Iterate through key-value pairs in the dictionary
+    for key, value in dictionary.items():
+
+        # Print each key-value pair with proper indentation
+        print(f"    '{key}': {value},")
+    
+    # Print the closing curly brace for the dictionary
+    print("}")
+
+def print_list_with_commas(list_to_print):
+
+    for i in range(len(list_to_print)):
+
+        print(list_to_print[i], end="")
+
+        # Add a comma if it's not the last element
+        if i < len(list_to_print) - 1:
+            print(", ", end="")
+
+    print()  # Print a newline at the end
+
+    return None
+
