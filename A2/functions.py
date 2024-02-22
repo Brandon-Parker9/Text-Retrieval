@@ -1,6 +1,7 @@
 import nltk 
 import os
 import re
+import math
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
 import nltk
@@ -12,6 +13,60 @@ nltk.download('stopwords', quiet=True)
 # Constants
 OPERATORS = ["AND", "OR", "NOT"]
 
+class TermFrequency:
+
+    NUM_OF_FUNCTIONS = 5
+
+    BINARY = 0
+    RAW_COUNT = 1
+    TF = 2
+    LOG_NORMALIZATION = 3
+    DOUBLE_NORMALIZATION = 4
+
+    def binary(term_count):
+
+        result = 0
+
+        if term_count > 0:
+            result = 1
+
+        return result
+    
+    def raw_count(term_count):
+
+        result = 0
+
+        if term_count > 0:
+            result = term_count
+
+        return result
+    
+    def tf(term_count, total_words):
+
+        result = 0
+
+        if term_count > 0:
+            result = round(term_count/(total_words - term_count), 2)
+
+        return result
+    
+    def log_normalization(term_count):
+
+        result = 0
+
+        if term_count > 0:
+            result = round(math.log(1 + term_count), 2)
+
+        return result
+    
+    def double_normalization(term_count, most_freq_word_count):
+
+        result = 0
+
+        if term_count > 0:
+            result = round(0.5 + 0.5 * (term_count/most_freq_word_count), 2)
+
+        return result
 
 def create_positional_index_from_files(folder_path):
 
@@ -48,8 +103,8 @@ def create_positional_index_from_files(folder_path):
         # Check if the file has a .txt extension
         if extension == ".txt":
 
-            # Add document id and name to the dictionary
-            all_document_ids_and_names[i] = list_of_files[i]
+            # Add document id, name, length, most frequent word and most frequent word count to the dictionary
+            all_document_ids_and_names[i] = {"name" : list_of_files[i], "length" : 0, "most_freq_word" : "", "most_freq_word_count" : 0, "second_most_freq_word" : "", "second_most_freq_word_count" : 0}
 
             # Read the contents of the file and convert to lowercase
             file_contents = read_file(folder_path + "/" + list_of_files[i])
@@ -58,6 +113,8 @@ def create_positional_index_from_files(folder_path):
             if file_contents != None:
     
                 word_tokens = normalize_and_tokenize(file_contents)
+
+                all_document_ids_and_names[i]["length"] = len(word_tokens)
 
                 # Iterate through each word token
                 for word in word_tokens:
@@ -83,7 +140,22 @@ def create_positional_index_from_files(folder_path):
                     
                     # append the word position for that document
                     positional_index[word][i].append(pos)
+
+                # Iterate through each word in list_of_words
+                for word in list_of_words:
+
+                    # update the most frequent word and its count
+                    if len(positional_index[word][i]) >= all_document_ids_and_names[i]["most_freq_word_count"]:
+
+                        all_document_ids_and_names[i]["most_freq_word"] = word
+                        all_document_ids_and_names[i]["most_freq_word_count"] = len(positional_index[word][i])
                                     
+                    # update the second most frequent word and its count
+                    if len(positional_index[word][i]) >= all_document_ids_and_names[i]["second_most_freq_word_count"] and len(positional_index[word][i]) < all_document_ids_and_names[i]["most_freq_word_count"]:
+
+                        all_document_ids_and_names[i]["second_most_freq_word"] = word
+                        all_document_ids_and_names[i]["second_most_freq_word_count"] = len(positional_index[word][i])
+
             # If the file could not be opened, add it to a list
             else:
                 files_unable_to_open.append(list_of_files[i])
@@ -163,6 +235,61 @@ def search_phrase_query(phrase_query, positional_index, proximity=5):
                     break
 
     return matching_documents
+
+def generate_TF_IDF_matrices(positional_index, all_document_ids_and_names):
+
+    # Get the number of documents and words in the index
+    num_of_documents = len(all_document_ids_and_names)
+    num_of_words_in_index = len(positional_index)
+
+    # Initialize a list to store TF-IDF matrices
+    TF_IDF_matrices = []
+
+    # Populate the array with 5 2D arrays filled with zeros
+    for _ in range(TermFrequency.NUM_OF_FUNCTIONS):
+
+        # Initialize a 2D array with zeros
+        array_2d = []
+
+        for _ in range(num_of_documents):
+
+            # Initialize each row with zeros
+            row = [0] * num_of_words_in_index
+            array_2d.append(row)
+
+        TF_IDF_matrices.append(array_2d)
+
+    # Get the keys of the positional index
+    word_key_list = list(positional_index.keys())
+
+    # Iterate through each word in the positional index
+    for word_index in range(num_of_words_in_index):
+
+        word = word_key_list[word_index]
+        
+        # Calculate IDF value for the current word
+        IDF_value = round(math.log(num_of_documents/(len(positional_index[word]) + 1)), 2)
+
+        # Iterate through each document containing the current word
+        for doc_id in positional_index[word]:
+
+            # Calculate TF-IDF values for different term frequency methods
+            TF_IDF_matrices[TermFrequency.BINARY][doc_id][word_index] = TermFrequency.binary(len(positional_index[word][doc_id])) * IDF_value
+            TF_IDF_matrices[TermFrequency.RAW_COUNT][doc_id][word_index] = TermFrequency.raw_count(len(positional_index[word][doc_id])) * IDF_value
+            TF_IDF_matrices[TermFrequency.TF][doc_id][word_index] = TermFrequency.tf(len(positional_index[word][doc_id]), all_document_ids_and_names[doc_id]['length']) * IDF_value
+            TF_IDF_matrices[TermFrequency.LOG_NORMALIZATION][doc_id][word_index] = TermFrequency.log_normalization(len(positional_index[word][doc_id])) * IDF_value
+            
+            # Determine the count of the most frequent word excluding the current term
+            most_freq_not_current_term_count= all_document_ids_and_names[doc_id]['most_freq_word_count']
+
+            # Update count if the current term is the most frequent word
+            if (word == all_document_ids_and_names[doc_id]['most_freq_word']):
+                most_freq_not_current_term_count = all_document_ids_and_names[doc_id]['second_most_freq_word_count']
+
+            # Calculate TF-IDF value for double normalization method
+            TF_IDF_matrices[TermFrequency.DOUBLE_NORMALIZATION][doc_id][word_index] = TermFrequency.double_normalization(len(positional_index[word][doc_id]), most_freq_not_current_term_count) * IDF_value        
+    
+    return TF_IDF_matrices
 
 def read_file(file_path):
 
@@ -273,7 +400,7 @@ def print_results(matching_document_ids, all_document_ids_and_names):
     print("\nList of matched document names: ")
 
     for id in matching_document_ids:
-        print(f" - ID: {id} Name: {all_document_ids_and_names[id]}")
+        print(f" - ID: {id} Name: {all_document_ids_and_names[id]['name']}")
 
     # Print a new line
     print()
