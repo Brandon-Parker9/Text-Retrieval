@@ -311,7 +311,7 @@ def generate_query_vector(query_terms, positional_index):
 
     return query_vector
 
-def rank_documents_by_TF_IDF(matching_document_ids, query_vector, positional_index, all_document_ids_and_names):
+def rank_documents_by_TF_IDF(matching_document_ids, query_vector, positional_index, all_document_ids_and_names, function):
 
     # Generate TF-IDF matrices
     TF_IDF_matrices = generate_TF_IDF_matrices(positional_index, all_document_ids_and_names)
@@ -326,11 +326,11 @@ def rank_documents_by_TF_IDF(matching_document_ids, query_vector, positional_ind
         results[matched_id] = {}
         
         # Calculate dot product of query vector with TF-IDF vectors for different term frequency methods
-        results[matched_id][TermFrequency.BINARY] = dot_product(query_vector, TF_IDF_matrices[TermFrequency.BINARY][matched_id])
-        results[matched_id][TermFrequency.RAW_COUNT] = dot_product(query_vector, TF_IDF_matrices[TermFrequency.RAW_COUNT][matched_id])
-        results[matched_id][TermFrequency.TF] = dot_product(query_vector, TF_IDF_matrices[TermFrequency.TF][matched_id])
-        results[matched_id][TermFrequency.LOG_NORMALIZATION] = dot_product(query_vector, TF_IDF_matrices[TermFrequency.LOG_NORMALIZATION][matched_id])
-        results[matched_id][TermFrequency.DOUBLE_NORMALIZATION] = dot_product(query_vector, TF_IDF_matrices[TermFrequency.DOUBLE_NORMALIZATION][matched_id])
+        results[matched_id][TermFrequency.BINARY] = function(query_vector, TF_IDF_matrices[TermFrequency.BINARY][matched_id])
+        results[matched_id][TermFrequency.RAW_COUNT] = function(query_vector, TF_IDF_matrices[TermFrequency.RAW_COUNT][matched_id])
+        results[matched_id][TermFrequency.TF] = function(query_vector, TF_IDF_matrices[TermFrequency.TF][matched_id])
+        results[matched_id][TermFrequency.LOG_NORMALIZATION] = function(query_vector, TF_IDF_matrices[TermFrequency.LOG_NORMALIZATION][matched_id])
+        results[matched_id][TermFrequency.DOUBLE_NORMALIZATION] = function(query_vector, TF_IDF_matrices[TermFrequency.DOUBLE_NORMALIZATION][matched_id])
 
     return results
 
@@ -349,6 +349,42 @@ def dot_product(vector1, vector2):
         dot_product += vector1[i] * vector2[i]
 
     return round(dot_product, 2)
+
+def cosine_similarity(vector1, vector2):
+
+    # Compute the dot product of the two vectors
+    dot_product_results = dot_product(vector1, vector2)
+
+    # Calculate the magnitudes of the vectors
+    vector1_magnitude = vector_magnitude(vector1)
+    vector2_magnitude = vector_magnitude(vector2)
+
+    # Check if either vector is a zero vector
+    if vector1_magnitude == 0 or vector2_magnitude == 0:
+
+        # If either vector is a zero vector, set the similarity to zero
+        similarity = 0
+    else:
+
+        # Compute the cosine similarity using the dot product and vector magnitudes
+        similarity = round((dot_product_results / (vector1_magnitude * vector2_magnitude)), 2)
+
+    return similarity
+
+def vector_magnitude(vector):
+
+    # Initialize the sum of squares
+    sum_of_squares = 0
+
+    # Iterate over each component of the vector
+    for component in vector:
+
+        # Add the square of the component to the sum of squares
+        sum_of_squares += component ** 2
+
+    # Calculate the square root of the sum of squares to get the magnitude
+    magnitude = math.sqrt(sum_of_squares)
+    return magnitude
 
 def read_file(file_path):
 
@@ -462,8 +498,18 @@ def user_input(positional_index, all_document_ids_and_names):
     # Generate the query vector based on the query terms and positional index
     query_vector = generate_query_vector(query_terms, positional_index)
 
-    # Rank the search results by TF-IDF scores
-    rank_results = rank_documents_by_TF_IDF(matching_document_ids, query_vector, positional_index, all_document_ids_and_names)
+    print("\n********** Dot Product **********")
+
+    # Rank the search results by TF-IDF scores using dot product 
+    rank_results = rank_documents_by_TF_IDF(matching_document_ids, query_vector, positional_index, all_document_ids_and_names, dot_product)
+
+    # Print the ranked search results
+    print_results_with_ranks(rank_results, all_document_ids_and_names)
+
+    print("\n********** Cosine Similarity **********")
+
+    # Rank the search results by TF-IDF scores using cosine similarity
+    rank_results = rank_documents_by_TF_IDF(matching_document_ids, query_vector, positional_index, all_document_ids_and_names, cosine_similarity)
 
     # Print the ranked search results
     print_results_with_ranks(rank_results, all_document_ids_and_names)
@@ -496,7 +542,8 @@ def print_results_with_ranks(rank_results, all_document_ids_and_names):
 
 def print_results_without_ranks(matching_document_ids, all_document_ids_and_names):
     
-    print("\nList of matched document names NOT RANKED: ")
+    print(f"\nTotal documents retrieved: {len(matching_document_ids)}")
+    print("List of matched document names with ranks: ")
 
     for matched_id in matching_document_ids:
         print(f" - ID: {matched_id:3} Name: {all_document_ids_and_names[matched_id]['name']:15}")
