@@ -1,0 +1,61 @@
+Enter the phrase query you would like to search for (max 5 words): the house was on fire
+
+Total documents retrieved: 3
+List of matched document names with ranks: 
+ - ID:  87 Name: enginer.txt    
+ - ID:  92 Name: fgoose.txt     
+ - ID: 208 Name: snowmaid.txt   
+
+********** Dot Product **********
+
+Binary Rankings: 
+ - ID:  87 Name: enginer.txt     Rank:   2.03 
+ - ID:  92 Name: fgoose.txt      Rank:   2.03 
+ - ID: 208 Name: snowmaid.txt    Rank:   2.03 
+
+Raw Count Rankings: 
+ - ID:  87 Name: enginer.txt     Rank:  13.28 
+ - ID:  92 Name: fgoose.txt      Rank:   9.22 
+ - ID: 208 Name: snowmaid.txt    Rank:   2.89 
+
+Term Frequency Rankings: 
+ - ID:  87 Name: enginer.txt     Rank:    0.0 
+ - ID:  92 Name: fgoose.txt      Rank:    0.0 
+ - ID: 208 Name: snowmaid.txt    Rank:   0.01 
+
+Log Normalization Rankings: 
+ - ID:  87 Name: enginer.txt     Rank:   3.95 
+ - ID:  92 Name: fgoose.txt      Rank:   3.18 
+ - ID: 208 Name: snowmaid.txt    Rank:   1.75 
+
+Double Normalization Rankings: 
+ - ID:  87 Name: enginer.txt     Rank:   1.16 
+ - ID:  92 Name: fgoose.txt      Rank:   1.08 
+ - ID: 208 Name: snowmaid.txt    Rank:   1.16 
+
+********** Cosine Similarity **********
+
+Binary Rankings: 
+ - ID:  87 Name: enginer.txt     Rank:   0.01 
+ - ID:  92 Name: fgoose.txt      Rank:   0.01 
+ - ID: 208 Name: snowmaid.txt    Rank:   0.07 
+
+Raw Count Rankings: 
+ - ID:  87 Name: enginer.txt     Rank:   0.04 
+ - ID:  92 Name: fgoose.txt      Rank:   0.02 
+ - ID: 208 Name: snowmaid.txt    Rank:   0.05 
+
+Term Frequency Rankings: 
+ - ID:  87 Name: enginer.txt     Rank:    0.0 
+ - ID:  92 Name: fgoose.txt      Rank:    0.0 
+ - ID: 208 Name: snowmaid.txt    Rank:   0.06 
+
+Log Normalization Rankings: 
+ - ID:  87 Name: enginer.txt     Rank:   0.03
+ - ID:  92 Name: fgoose.txt      Rank:   0.01
+ - ID: 208 Name: snowmaid.txt    Rank:   0.07
+
+Double Normalization Rankings:
+ - ID:  87 Name: enginer.txt     Rank:   0.01
+ - ID:  92 Name: fgoose.txt      Rank:   0.01
+ - ID: 208 Name: snowmaid.txt    Rank:   0.07
