@@ -2,6 +2,8 @@ import requests
 from bs4 import BeautifulSoup
 import pandas as pd
 from urllib.parse import urlparse, urljoin
+import os
+import re
 
 def run_web_scrapping(url):
 
@@ -31,11 +33,13 @@ def run_web_scrapping(url):
 
     for url in url_list:
         print(url)
+    
+    download_html_from_url(url_list)
 
-    pretty_html_list = get_prettified_raw_html_from_urls(url_list)
+    # pretty_html_list = get_prettified_raw_html_from_urls(url_list)
 
-    for pretty_html in pretty_html_list:
-        print(pretty_html)
+    # for pretty_html in pretty_html_list:
+    #     print(pretty_html)
 
 def prettify_raw_html_from_url(url):
     
@@ -176,6 +180,45 @@ def create_list_of_hyper_links_from_html(soup, url):
                 hyperlinks.append(href)
 
     return hyperlinks
+
+def download_html_from_url(url_list):
+    print(f"Downloading {len(url_list)} HTML files...")
+    path = os.path.dirname(os.path.abspath(__file__))
+    path = os.path.join(path, "output")
+    
+    # Empty the output directory
+    for file in os.listdir(path):
+        if file != ".gitkeep":
+            os.remove(os.path.join(path, file))
+    
+    for url in url_list:
+        _download_html_from_url(url, path)
+    
+    #/fix check if file is empty before saving
+def _download_html_from_url(url, path):
+    # Retrieve the HTML content from the URL
+    try:
+        response = requests.get(url)
+    except requests.exceptions.RequestException as e:
+        print(f"Failed to download {url}: {e}")
+        return
+
+    # Raise an exception for any HTTP error status codes
+    response.raise_for_status()
+
+    # Extract the filename from the URL
+    filename = url.replace("https://", "").replace("http://", "")
+    filename = re.sub(r"[^a-zA-Z0-9]", "_", filename)
+    filename = filename.split("?")[0] + ".html"
+
+    # Save the HTML content to a file in the ./output directory
+    file_path = os.path.join(path, filename)
+
+    with open(file_path, "wb") as file:
+        file.write(response.content)
+
+    # Print the success message
+    print(f"Downloaded: {filename}")
 
 def get_prettified_raw_html_from_urls(url_list):
 
